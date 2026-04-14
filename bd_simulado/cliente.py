@@ -153,7 +153,7 @@ def executar_modo_interativo(conexao) -> None:
     print("Exemplos:")
     print("INSERT *id* *nome*")
     print("SELECT *id*")
-    print("UPDATE *id* *nome*")
+    print("UPDATE *id* *novo nome*")
     print("DELETE *id*")
     print("SELECT *")
     print("Digite SAIR para encerrar.\n")
