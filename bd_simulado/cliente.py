@@ -151,10 +151,10 @@ def executar_modo_demo(conexao) -> None:
 def executar_modo_interativo(conexao) -> None:
     print("\nAgora voce pode testar manualmente.")
     print("Exemplos:")
-    print("INSERT 4 Diego")
-    print("SELECT 4")
-    print("UPDATE 4 Diego Souza")
-    print("DELETE 4")
+    print("INSERT *id* *nome*")
+    print("SELECT *id*")
+    print("UPDATE *id* *nome*")
+    print("DELETE *id*")
     print("SELECT *")
     print("Digite SAIR para encerrar.\n")
 

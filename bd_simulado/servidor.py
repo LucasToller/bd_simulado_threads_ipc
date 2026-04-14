@@ -13,7 +13,7 @@ TEMPO_ESPERA_PIPE = 0.2
 TEMPO_ESPERA_FILA = 0.2
 
 
-def agora_formatado() -> str:
+def data_e_hora_formatadas() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -47,7 +47,7 @@ def montar_resposta(operacao: str, sucesso: bool, mensagem: str, dados=None, thr
         "sucesso": sucesso,
         "mensagem": mensagem,
         "dados": dados,
-        "horario": agora_formatado(),
+        "horario": data_e_hora_formatadas(),
         "thread_responsavel": thread_responsavel,
     }
 
