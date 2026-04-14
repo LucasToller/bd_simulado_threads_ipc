@@ -1,14 +1,10 @@
 {
-    "2": {
-        "id": 2,
-        "nome": "Maria Souza"
-    },
-    "3": {
-        "id": 3,
-        "nome": "Joao"
-    },
     "1": {
         "id": 1,
-        "nome": "Lucas"
+        "nome": "Ana"
+    },
+    "2": {
+        "id": 2,
+        "nome": "João"
     }
 }

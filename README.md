@@ -1,21 +1,22 @@
-# Sistema de Requisicoes Paralelas
+# Sistema de Processamento Paralelo de Requisicoes
 
 ## Visao geral
 Projeto da disciplina de Sistemas Operacionais para simular o processamento paralelo de requisicoes a um banco de dados.
 
-**Projeto mantém o foco em:**
-- comunicacao entre processos com **IPC via Pipe**;
-- **processo cliente** enviando requisicoes;
-- **processo servidor** recebendo e distribuindo tarefas;
-- **pool de threads** no servidor;
-- controle de concorrencia com **Lock** no banco simulado;
-- operacoes **INSERT, SELECT, UPDATE, DELETE e LISTAR**;
-- persistencia dos dados em arquivo **JSON** e registro das operacoes em **log**.
+Nesta versao, o projeto foi deixado mais simples e proximo da estrutura sugerida no enunciado, mantendo:
+- um processo cliente enviando requisicoes;
+- um processo servidor recebendo as requisicoes via IPC com Pipe;
+- pool de threads no servidor para processamento paralelo;
+- banco simulado em arquivo JSON;
+- controle de concorrencia com Lock;
+- operacoes INSERT, SELECT, UPDATE, DELETE, LISTAR e ENCERRAR;
+- registro das operacoes em arquivo de log.
 
+Nesta etapa, o foco esta somente no terminal.
 
 ## Estrutura do projeto
 ```text
-Sistema_de_Requisicoes_Paralelas_refatorado/
+Sistema_de_Processamento_Paralelo_de_Requisicoes/
 ├── bd_simulado/
 │   ├── cliente.py
 │   ├── servidor.py
@@ -49,28 +50,24 @@ Recomendado para apresentacao:
 python cliente.py --modo demo --resetar-dados
 ```
 
-## Comandos disponiveis no terminal
-- `inserir <id> <nome>`
-- `buscar <id>`
-- `listar`
-- `atualizar <id> <novo_nome>`
-- `remover <id>`
-- `sair`
+## Comandos disponiveis
+- `INSERT <id> <nome>`
+- `SELECT <id>`
+- `SELECT *`
+- `UPDATE <id> <novo_nome>`
+- `DELETE <id>`
+- `SAIR`
+
+Tambem sao aceitos os equivalentes em portugues:
+- `inserir`, `buscar`, `listar`, `atualizar`, `remover`, `encerrar`
 
 ## Fluxo do sistema
-1. O cliente monta a requisicao e envia via **Pipe**.
+1. O cliente envia a requisicao via Pipe.
 2. O servidor recebe a requisicao.
 3. O servidor coloca a requisicao em uma fila interna.
 4. As threads do pool processam as operacoes em paralelo.
-5. O banco simulado usa **Lock** para evitar condicoes de corrida.
+5. O banco simulado usa Lock para evitar condicoes de corrida.
 6. A resposta volta ao cliente e a execucao e registrada em `sistema.log`.
 
-## Arquivos principais
-### `cliente.py`
-Responsavel por iniciar o processo servidor, enviar requisicoes e exibir as respostas no terminal.
-
-### `servidor.py`
-Responsavel por receber as requisicoes via Pipe, organizar a fila interna e distribuir o processamento entre as threads.
-
-### `banco.py`
-Responsavel pelo banco simulado em JSON, com operacoes de insercao, busca, listagem, atualizacao e remocao de registros.
+## Observacao
+A estrutura foi simplificada para ficar mais proxima do modelo sugerido no PDF da atividade, sem frontend nesta entrega.

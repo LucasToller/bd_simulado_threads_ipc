@@ -7,6 +7,7 @@ from servidor import iniciar_servidor
 BASE_DIR = Path(__file__).resolve().parent
 ARQUIVO_BANCO = BASE_DIR / "banco.json"
 ARQUIVO_LOG = BASE_DIR / "sistema.log"
+QUANTIDADE_THREADS = 4
 
 
 def limpar_arquivos() -> None:
@@ -36,12 +37,12 @@ def interpretar_comando(texto: str) -> tuple[str, dict]:
 
     if comando in {"insert", "inserir"}:
         if len(partes) < 3:
-            raise ValueError("Uso: inserir <id> <nome>")
-        return "INSERT", {"id": int(partes[1]), "nome": " ".join(partes[2:])}
+            raise ValueError("Uso: INSERT <id> <nome>")
+        return "INSERT", {"id": int(partes[1]), "nome": " ".join(partes[2:]).strip()}
 
     if comando in {"select", "buscar"}:
-        if len(partes) == 1:
-            return "SELECT", {}
+        if len(partes) == 1 or (len(partes) == 2 and partes[1] == "*"):
+            return "LISTAR", {}
         return "SELECT", {"id": int(partes[1])}
 
     if comando in {"listar", "list"}:
@@ -49,68 +50,121 @@ def interpretar_comando(texto: str) -> tuple[str, dict]:
 
     if comando in {"update", "atualizar"}:
         if len(partes) < 3:
-            raise ValueError("Uso: atualizar <id> <novo_nome>")
-        return "UPDATE", {"id": int(partes[1]), "nome": " ".join(partes[2:])}
+            raise ValueError("Uso: UPDATE <id> <novo_nome>")
+        return "UPDATE", {"id": int(partes[1]), "nome": " ".join(partes[2:]).strip()}
 
     if comando in {"delete", "remover", "excluir"}:
-        if len(partes) < 2:
-            raise ValueError("Uso: remover <id>")
+        if len(partes) != 2:
+            raise ValueError("Uso: DELETE <id>")
         return "DELETE", {"id": int(partes[1])}
 
     if comando in {"sair", "encerrar"}:
         return "ENCERRAR", {}
 
-    raise ValueError(f"Comando nao suportado: {comando}")
+    raise ValueError(f"Comando nao suportado: {partes[0]}")
+
+
+def imprimir_lista_registros(registros: list[dict], numero_thread: str, titulo: str) -> None:
+    print(f"[{numero_thread}] {titulo}")
+    if not registros:
+        print("banco vazio")
+        return
+
+    for registro in registros:
+        print(f"id={registro['id']} nome={registro['nome']}")
 
 
 def imprimir_resposta(resposta: dict) -> None:
-    status = "OK" if resposta.get("sucesso") else "ERRO"
-    print(f"\n[{status}] {resposta.get('mensagem', '')}")
-    print(f"Operacao: {resposta.get('operacao', 'N/A')}")
-    print(f"Thread responsavel: {resposta.get('thread_responsavel', 'N/A')}")
-    print(f"Horario: {resposta.get('horario', 'N/A')}")
-    if resposta.get("dados") is not None:
-        print(f"Dados: {resposta['dados']}")
+    operacao = str(resposta.get("operacao", "")).upper().strip()
+    sucesso = bool(resposta.get("sucesso"))
+    mensagem = str(resposta.get("mensagem", "")).strip()
+    dados = resposta.get("dados")
+    numero_thread = str(resposta.get("thread_responsavel") or "servidor")
+
+    if operacao == "ENCERRAR":
+        print(f"\n[{numero_thread}] {mensagem}")
+        return
+
+    if operacao == "INSERT":
+        if sucesso and isinstance(dados, dict):
+            print(f"[{numero_thread}] INSERT ok -> id={dados['id']}, nome={dados['nome']}")
+        else:
+            print(f"[{numero_thread}] INSERT falhou: {mensagem}")
+        return
+
+    if operacao in {"SELECT", "LISTAR"}:
+        if sucesso:
+            titulo = "SELECT *" if operacao == "SELECT" else "LISTAR"
+            if isinstance(dados, dict):
+                print(f"[{numero_thread}] SELECT -> id={dados['id']} nome={dados['nome']}")
+            elif isinstance(dados, list):
+                imprimir_lista_registros(dados, numero_thread, titulo)
+            else:
+                print(f"[{numero_thread}] {mensagem}")
+        else:
+            comando = "SELECT" if operacao == "SELECT" else "LISTAR"
+            print(f"[{numero_thread}] {comando} falhou: {mensagem}")
+        return
+
+    if operacao == "UPDATE":
+        if sucesso and isinstance(dados, dict):
+            print(f"[{numero_thread}] UPDATE ok -> id={dados['id']}, nome={dados['nome']}")
+        else:
+            print(f"[{numero_thread}] UPDATE falhou: {mensagem}")
+        return
+
+    if operacao == "DELETE":
+        if sucesso and isinstance(dados, dict):
+            print(f"[{numero_thread}] DELETE ok -> id={dados['id']}")
+        else:
+            print(f"[{numero_thread}] DELETE falhou: {mensagem}")
+        return
+
+    prefixo = "ok" if sucesso else "falhou"
+    print(f"[{numero_thread}] {operacao} {prefixo}: {mensagem}")
 
 
 def executar_modo_demo(conexao) -> None:
     print("\nExecutando lote de demonstracao...\n", flush=True)
+
     comandos = [
-        ("INSERT", {"id": 1, "nome": "Lucas"}),
-        ("INSERT", {"id": 2, "nome": "Maria"}),
-        ("INSERT", {"id": 3, "nome": "Joao"}),
-        ("SELECT", {"id": 1}),
-        ("UPDATE", {"id": 2, "nome": "Maria Souza"}),
-        ("SELECT", {"id": 2}),
-        ("LISTAR", {}),
-        ("DELETE", {"id": 1}),
-        ("LISTAR", {}),
+        "INSERT 1 Ana",
+        "INSERT 2 Carlos",
+        "INSERT 3 Beatriz",
+        "SELECT 2",
+        "UPDATE 1 Ana Paula",
+        "DELETE 3",
+        "SELECT *",
     ]
 
-    for operacao, dados in comandos:
+    for texto in comandos:
+        print(f"> {texto}")
+        operacao, dados = interpretar_comando(texto)
         resposta = enviar_e_aguardar(conexao, operacao, dados)
         imprimir_resposta(resposta)
+        print()
 
     resposta = enviar_e_aguardar(conexao, "ENCERRAR", {})
-    print(f"\nServidor: {resposta.get('mensagem', '')}")
+    imprimir_resposta(resposta)
 
 
 def executar_modo_interativo(conexao) -> None:
-    print("\nCliente iniciado. Comandos disponiveis:")
-    print("- inserir <id> <nome>")
-    print("- buscar <id>")
-    print("- listar")
-    print("- atualizar <id> <novo_nome>")
-    print("- remover <id>")
-    print("- sair")
+    print("\nAgora voce pode testar manualmente.")
+    print("Exemplos:")
+    print("INSERT 4 Diego")
+    print("SELECT 4")
+    print("UPDATE 4 Diego Souza")
+    print("DELETE 4")
+    print("SELECT *")
+    print("Digite SAIR para encerrar.\n")
 
     while True:
         try:
-            texto = input("\nDigite um comando: ").strip()
+            texto = input("> ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nEncerrando cliente...")
             resposta = enviar_e_aguardar(conexao, "ENCERRAR", {})
-            print(f"Servidor: {resposta.get('mensagem', '')}")
+            imprimir_resposta(resposta)
             break
 
         if not texto:
@@ -122,8 +176,22 @@ def executar_modo_interativo(conexao) -> None:
             imprimir_resposta(resposta)
             if operacao == "ENCERRAR":
                 break
+        except ValueError as erro:
+            print(f"[cliente] {erro}")
         except Exception as erro:
-            print(f"\n[ERRO] {erro}")
+            print(f"[cliente] Erro ao executar comando: {erro}")
+
+
+def preparar_arquivos(resetar_dados: bool) -> None:
+    if resetar_dados:
+        limpar_arquivos()
+        print("Dados e log resetados com sucesso.\n")
+        return
+
+    ARQUIVO_BANCO.touch(exist_ok=True)
+    if ARQUIVO_BANCO.stat().st_size == 0:
+        ARQUIVO_BANCO.write_text("{}\n", encoding="utf-8")
+    ARQUIVO_LOG.touch(exist_ok=True)
 
 
 def main() -> None:
@@ -141,20 +209,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.resetar_dados:
-        limpar_arquivos()
-        print("Dados e log resetados com sucesso.\n")
-    else:
-        ARQUIVO_BANCO.touch(exist_ok=True)
-        if ARQUIVO_BANCO.stat().st_size == 0:
-            ARQUIVO_BANCO.write_text("{}\n", encoding="utf-8")
-        ARQUIVO_LOG.touch(exist_ok=True)
+    preparar_arquivos(args.resetar_dados)
 
     conexao_cliente, conexao_servidor = Pipe(duplex=True)
-
     processo_servidor = Process(
         target=iniciar_servidor,
-        args=(conexao_servidor, str(ARQUIVO_BANCO), str(ARQUIVO_LOG), 4),
+        args=(conexao_servidor, str(ARQUIVO_BANCO), str(ARQUIVO_LOG), QUANTIDADE_THREADS),
         name="processo_servidor",
         daemon=True,
     )
@@ -171,6 +231,7 @@ def main() -> None:
             conexao_cliente.close()
         except Exception:
             pass
+
         processo_servidor.join(timeout=5)
         if processo_servidor.is_alive():
             processo_servidor.terminate()

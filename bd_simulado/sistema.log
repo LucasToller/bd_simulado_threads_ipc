@@ -1,26 +1,19 @@
-2026-04-14 18:30:57 | INFO | MainThread | Servidor iniciado com 4 threads.
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 1, 'nome': 'Lucas'}
-2026-04-14 18:30:57 | INFO | worker-1 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-1
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 2, 'nome': 'Maria'}
-2026-04-14 18:30:57 | INFO | worker-2 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-2
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 3, 'nome': 'Joao'}
-2026-04-14 18:30:57 | INFO | worker-3 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-3
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=SELECT | dados={'id': 1}
-2026-04-14 18:30:57 | INFO | worker-4 | Requisicao processada | operacao=SELECT | sucesso=True | thread=worker-4
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=UPDATE | dados={'id': 2, 'nome': 'Maria Souza'}
-2026-04-14 18:30:57 | INFO | worker-1 | Requisicao processada | operacao=UPDATE | sucesso=True | thread=worker-1
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=SELECT | dados={'id': 2}
-2026-04-14 18:30:57 | INFO | worker-2 | Requisicao processada | operacao=SELECT | sucesso=True | thread=worker-2
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=LISTAR | dados={}
-2026-04-14 18:30:57 | INFO | worker-3 | Requisicao processada | operacao=LISTAR | sucesso=True | thread=worker-3
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=DELETE | dados={'id': 1}
-2026-04-14 18:30:57 | INFO | worker-4 | Requisicao processada | operacao=DELETE | sucesso=True | thread=worker-4
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=LISTAR | dados={}
-2026-04-14 18:30:57 | INFO | worker-1 | Requisicao processada | operacao=LISTAR | sucesso=True | thread=worker-1
-2026-04-14 18:30:57 | INFO | MainThread | Requisicao recebida | operacao=ENCERRAR | dados={}
-2026-04-14 18:30:57 | INFO | MainThread | Encerramento solicitado pelo cliente.
-2026-04-14 18:30:57 | INFO | MainThread | Servidor finalizado.
-2026-04-14 15:37:07 | INFO | MainThread | Servidor iniciado com 4 threads.
-2026-04-14 15:37:26 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 1, 'nome': 'Lucas'}
-2026-04-14 15:37:26 | INFO | worker-1 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-1
-2026-04-14 15:38:35 | INFO | MainThread | Servidor iniciado com 4 threads.
+2026-04-14 18:53:24 | INFO | MainThread | Servidor iniciado com 4 threads.
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 1, 'nome': 'Ana'}
+2026-04-14 18:53:24 | INFO | worker-1 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-1
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 2, 'nome': 'Carlos'}
+2026-04-14 18:53:24 | INFO | worker-2 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-2
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=INSERT | dados={'id': 3, 'nome': 'Beatriz'}
+2026-04-14 18:53:24 | INFO | worker-3 | Requisicao processada | operacao=INSERT | sucesso=True | thread=worker-3
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=SELECT | dados={'id': 2}
+2026-04-14 18:53:24 | INFO | worker-4 | Requisicao processada | operacao=SELECT | sucesso=True | thread=worker-4
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=UPDATE | dados={'id': 1, 'nome': 'Ana Paula'}
+2026-04-14 18:53:24 | INFO | worker-1 | Requisicao processada | operacao=UPDATE | sucesso=True | thread=worker-1
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=DELETE | dados={'id': 3}
+2026-04-14 18:53:24 | INFO | worker-2 | Requisicao processada | operacao=DELETE | sucesso=True | thread=worker-2
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=LISTAR | dados={}
+2026-04-14 18:53:24 | INFO | worker-3 | Requisicao processada | operacao=LISTAR | sucesso=True | thread=worker-3
+2026-04-14 18:53:24 | INFO | MainThread | Requisicao recebida | operacao=ENCERRAR | dados={}
+2026-04-14 18:53:24 | INFO | MainThread | Encerramento solicitado pelo cliente.
+2026-04-14 18:53:24 | INFO | MainThread | Servidor finalizado.
+2026-04-14 15:56:12 | INFO | MainThread | Servidor iniciado com 4 threads.
