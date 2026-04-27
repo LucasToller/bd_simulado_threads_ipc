@@ -27,6 +27,43 @@ def enviar_e_aguardar(conexao, operacao: str, dados: dict | None = None) -> dict
     conexao.send(requisicao)
     return conexao.recv()
 
+def enviar_lote_e_aguardar(conexao, comandos: list[str]) -> bool:
+    requisicoes = []
+    encerrar_solicitado = False
+
+    for texto in comandos:
+        texto = texto.strip()
+
+        if not texto:
+            continue
+
+        operacao, dados = interpretar_comando(texto)
+
+        if operacao == "ENCERRAR":
+            encerrar_solicitado = True
+            continue
+
+        requisicao = montar_requisicao(operacao, dados)
+        requisicoes.append((texto, requisicao))
+
+    if not requisicoes:
+        return encerrar_solicitado
+
+    print("\nEnviando requisicoes em lote, sem aguardar resposta individual...\n")
+
+    for texto, requisicao in requisicoes:
+        print(f"> enviado: {texto}")
+        conexao.send(requisicao)
+
+    print(f"\nTotal de requisicoes enviadas: {len(requisicoes)}")
+    print("Aguardando respostas das threads...\n")
+
+    for _ in range(len(requisicoes)):
+        resposta = conexao.recv()
+        imprimir_resposta(resposta)
+
+    return encerrar_solicitado
+
 
 def interpretar_comando(texto: str) -> tuple[str, dict]:
     partes = texto.strip().split()
@@ -94,7 +131,7 @@ def imprimir_resposta(resposta: dict) -> None:
 
     if operacao in {"SELECT", "LISTAR"}:
         if sucesso:
-            titulo = "SELECT *" if operacao == "SELECT" else "LISTAR"
+            titulo = "SELECT *" if operacao == "LISTAR" else "SELECT"
             if isinstance(dados, dict):
                 print(f"[{numero_thread}] SELECT -> id={dados['id']} nome={dados['nome']}")
             elif isinstance(dados, list):
@@ -148,6 +185,34 @@ def executar_modo_demo(conexao) -> None:
     imprimir_resposta(resposta)
 
 
+def executar_modo_carga(conexao) -> None:
+    print("\nExecutando teste de carga concorrente...\n")
+
+    comandos = [
+        "INSERT 1 Ana",
+        "INSERT 2 Carlos",
+        "INSERT 3 Beatriz",
+        "INSERT 4 Lucas",
+        "INSERT 5 Felipe",
+        "INSERT 6 Julia",
+        "INSERT 7 Marcos",
+        "INSERT 8 Amanda",
+        "INSERT 9 Pedro",
+        "INSERT 10 Camila",
+        "INSERT 11 Gustavo",
+        "INSERT 12 Laura",
+    ]
+
+    enviar_lote_e_aguardar(conexao, comandos)
+
+    print("\nConferencia final do banco:\n")
+    resposta = enviar_e_aguardar(conexao, "LISTAR", {})
+    imprimir_resposta(resposta)
+
+    resposta = enviar_e_aguardar(conexao, "ENCERRAR", {})
+    imprimir_resposta(resposta)
+
+
 def executar_modo_interativo(conexao) -> None:
     print("\nAgora voce pode testar manualmente.")
     print("Exemplos:")
@@ -156,6 +221,8 @@ def executar_modo_interativo(conexao) -> None:
     print("UPDATE *id* *novo nome*")
     print("DELETE *id*")
     print("SELECT *")
+    print("Tambem pode enviar varios comandos na mesma linha usando ponto e virgula:")
+    print("INSERT 1 Ana; INSERT 2 Carlos; INSERT 3 Lucas; SELECT *")
     print("Digite SAIR para encerrar.\n")
 
     while True:
@@ -171,16 +238,28 @@ def executar_modo_interativo(conexao) -> None:
             continue
 
         try:
+            if ";" in texto:
+                comandos = [comando.strip() for comando in texto.split(";") if comando.strip()]
+                encerrar_solicitado = enviar_lote_e_aguardar(conexao, comandos)
+
+                if encerrar_solicitado:
+                    resposta = enviar_e_aguardar(conexao, "ENCERRAR", {})
+                    imprimir_resposta(resposta)
+                    break
+
+                continue
+
             operacao, dados = interpretar_comando(texto)
             resposta = enviar_e_aguardar(conexao, operacao, dados)
             imprimir_resposta(resposta)
+
             if operacao == "ENCERRAR":
                 break
+
         except ValueError as erro:
             print(f"[cliente] {erro}")
         except Exception as erro:
             print(f"[cliente] Erro ao executar comando: {erro}")
-
 
 def preparar_arquivos(resetar_dados: bool) -> None:
     if resetar_dados:
@@ -198,9 +277,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Cliente do sistema de requisicoes paralelas.")
     parser.add_argument(
         "--modo",
-        choices=["interativo", "demo"],
+        choices=["interativo", "demo", "carga"],
         default="interativo",
-        help="Executa o cliente em modo interativo ou demonstracao.",
+        help="Executa o cliente em modo interativo, demonstracao ou carga concorrente.",
     )
     parser.add_argument(
         "--resetar-dados",
@@ -224,6 +303,8 @@ def main() -> None:
     try:
         if args.modo == "demo":
             executar_modo_demo(conexao_cliente)
+        elif args.modo == "carga":
+            executar_modo_carga(conexao_cliente)
         else:
             executar_modo_interativo(conexao_cliente)
     finally:
